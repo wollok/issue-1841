@@ -1,0 +1,78 @@
+import materias.*
+
+describe "1 - inscripcion" {
+	
+	const electronica = new Carrera()
+	const sistemas = new Carrera()
+	const pdep = new Materia(carrera = sistemas)
+	const tc1 = new Materia(carrera = electronica, cupo = 1)
+	const tc2 = new Materia(carrera = electronica, cupo = 2)
+	const mediosEnlace = new Materia(carrera = electronica)
+	const comunicaciones = new Materia (carrera = electronica, cupo = 10)
+	const td1 = new Materia (carrera = electronica)
+	const control = new Materia (carrera = electronica)	
+	const pepe = new Estudiante(carrera = electronica)
+	const nico = new Estudiante(carrera = electronica)
+	const elias = new Estudiante(carrera = electronica)
+	const juan = new Estudiante(carrera = electronica)
+	
+	fixture{
+		td1.creditosRequeridos(5)
+		tc1.creditosQueOtorga(10)	
+		mediosEnlace.creditosRequeridos(20)	
+		comunicaciones.correlativas().add(tc1)
+		tc1.inscribirA(pepe)
+		tc1.inscribirA(nico)
+		tc2.inscribirA(pepe)
+		tc2.inscribirA(nico)
+		tc2.inscribirA(elias)
+		tc1.inscribirA(juan)
+		pepe.aprobo(tc1)
+		control.correlativas().add(tc1)
+		control.correlativas().add(tc2)
+	}
+	
+	test "Un alumno se intenta inscribir a una materia de otra carrera de la que está cursando, se rechaza." {
+		assert.throwsException({pdep.inscribirA(pepe)})
+	}	
+	
+	test "Un alumno se intenta inscribir a una materia que ya cursó, se rechaza." {
+		assert.throwsException({tc1.inscribirA(pepe)})
+	}
+	
+	test "Un alumno se intenta inscribir a una materia en la que ya está inscripto, se rechaza." {
+		assert.throwsException({tc2.inscribirA(pepe)})
+	}
+	
+	test "Un alumno se intenta inscribir a una materia cuyos pre-requisitos son tener ciertas correlativas, le falta una correlativa, se rechaza." {
+		assert.throwsException({control.inscribirA(pepe)})
+	}
+	
+	test "Un alumno se intenta inscribir a una materia cuyos pre-requisitos necesitan una cierta cantidad de créditos, le faltan esos créditos, se rechaza." {
+		assert.throwsException({mediosEnlace.inscribirA(pepe)})
+	}
+	
+	test "Un alumno se intenta inscribir a una materia cuyos pre-requisitos son tener ciertas correlativas, tiene todas las correlativas, hay cupo, se aprueba." {
+		try{
+			mediosEnlace.inscribirA(pepe)
+			assert.that(true)
+		}catch e : Exception{
+			assert.that(false)
+		}
+	}
+	
+	test "Un alumno se intenta inscribir a una materia cuyos pre-requisitos necesitan una cierta cantidad de créditos, los tiene, hay cupo, se aprueba." {
+		try{
+			td1.inscribirA(pepe)
+			assert.that(true)
+		}catch e : Exception{
+			assert.that(false)	
+		}
+	}	
+	
+	test "Un alumno quiere inscribirse a una materia sin pre-requisitos (nada) pero no hay cupo. Usar criterio por orden de llegada y el alumno queda en lista de espera."{
+		tc1.inscribirA(juan)
+		assert.that(tc1.listaDeEspera().contains(juan))
+	}
+ 
+}

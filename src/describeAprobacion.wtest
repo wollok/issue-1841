@@ -1,0 +1,58 @@
+import materias.*
+
+describe "2 - aprobacion" {
+	
+	const electronica = new Carrera()
+	const sistemas = new Carrera()
+	const pdep = new Materia(carrera = sistemas)
+	const tc1 = new Materia(carrera = electronica, cupo = 1)
+	const tc2 = new Materia(carrera = electronica, cupo = 2)
+	const mediosEnlace = new Materia(carrera = electronica)
+	const comunicaciones = new Materia (carrera = electronica, cupo = 10)
+	const td1 = new Materia (carrera = electronica)
+	const control = new Materia (carrera = electronica)	
+	const pepe = new Estudiante(carrera = electronica)
+	const nico = new Estudiante(carrera = electronica)
+	const elias = new Estudiante(carrera = electronica)
+	const juan = new Estudiante(carrera = electronica)
+	const matias = new Estudiante (carrera = electronica)
+	
+	fixture{
+		td1.creditosRequeridos(5)
+		tc1.creditosQueOtorga(10)	
+		tc2.creditosQueOtorga(20)
+		mediosEnlace.creditosRequeridos(20)	
+		comunicaciones.correlativas().add(tc1)
+		tc1.inscribirA(pepe)
+		tc1.inscribirA(nico)
+		tc2.inscribirA(pepe)
+		tc2.inscribirA(nico)
+		tc2.inscribirA(elias)
+		tc2.inscribirA(juan)
+		pepe.aprobo(tc1)
+		control.correlativas().add(tc1)
+		control.correlativas().add(tc2)
+		matias.aprobo(tc1)
+		matias.aprobo(tc2)
+	}
+
+	test "Registrar la aprobación de un alumno por primera vez, debe poderse."{
+ 		try{
+ 			pepe.aprobo(tc2)
+ 			assert.that(true)
+ 		}catch e : Exception{
+ 			assert.that(false)
+ 		}
+ 	}
+ 
+ 	test "Registrar la aprobación de un alumno por segunda vez, debe rechazarse."{
+ 		assert.throwsException({pepe.aprobo(tc1)})
+ 	}
+ 	
+ 	test "Registrar la aprobación de un alumno a dos materias, los créditos que tiene el alumno debe ser la sumatoria de los créditos de ambas materias aprobadas."{
+ 		pepe.aprobo(tc2)
+ 		assert.equals(matias.creditosAcumulados(), 30)
+ 	}
+	
+	
+}
